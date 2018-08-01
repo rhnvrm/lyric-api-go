@@ -12,5 +12,11 @@ func main() {
 		song   = "Imagine"
 	)
 
-	fmt.Println(lyrics.Fetch(artist, song))
+	l := lyrics.New()
+	lyric, err := l.Search(artist, song)
+
+	if err != nil {
+		fmt.Printf("Lyrics for %v-%v were not found", artist, song)
+	}
+	fmt.Println(lyric)
 }

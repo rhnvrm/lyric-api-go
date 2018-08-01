@@ -7,6 +7,10 @@ import (
 	"golang.org/x/net/html"
 )
 
+// RenderSelection is a helper function modified from
+// github.com/PuerkitoBio/goquery - Text() function
+// it expects and additional separator to add between each
+// line.
 func RenderSelection(s *goquery.Selection, seperator string) string {
 	var buf bytes.Buffer
 	var f func(*html.Node)
