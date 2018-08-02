@@ -3,6 +3,7 @@ package lyrics
 import (
 	"errors"
 
+	"github.com/rhnvrm/lyric-api-go/genius"
 	"github.com/rhnvrm/lyric-api-go/lyricswikia"
 	"github.com/rhnvrm/lyric-api-go/songlyrics"
 )
@@ -10,8 +11,11 @@ import (
 type provider func(artist, song string) string
 
 // Supported Providers:
+// Default
 // - Lyrics Wikia	(github.com/rhnvrm/lyric-api-go/lyricswikia)
 // - Song Lyrics	(github.com/rhnvrm/lyric-api-go/songlyrics)
+// Require Setup
+// - Genius 		(github.com/rhnvrm/lyric-api-go/genius)
 var defaultProviders = []provider{
 	lyricswikia.Fetch,
 	songlyrics.Fetch,
@@ -54,6 +58,18 @@ func WithSongLyrics() Option {
 	}
 }
 
+// WithGenius is an Option Configuration Decorator that adds
+// Genius Provider to the list of providers to attempt fetching
+// lyrics from. It requires an additional access token which can
+// be obtained using the developer portal (https://genius.com/developers)
+func WithGeniusLyrics(accessToken string) Option {
+	return func(l Lyric) Lyric {
+		g := genius.New(accessToken)
+		l.providers = append(l.providers, g.Fetch)
+		return l
+	}
+}
+
 // New creates a new Lyric API, which can be used to Search for Lyrics
 // using various providers. The default behaviour is to use all
 // providers available, although it can be explicitly set to the same
@@ -69,10 +85,13 @@ func WithSongLyrics() Option {
 // Eg. to attempt with both Lyrics Wikia and Song Lyrics:
 // 		lyrics.New(WithLyricsWikia(), WithSongLyrics())
 func New(o ...Option) Lyric {
-	l := Lyric{
-		providers: defaultProviders,
+	if len(o) == 0 {
+		return Lyric{
+			providers: defaultProviders,
+		}
 	}
 
+	l := Lyric{}
 	for _, option := range o {
 		l = option(l)
 	}

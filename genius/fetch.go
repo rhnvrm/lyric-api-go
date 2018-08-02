@@ -1,4 +1,4 @@
-package main
+package genius
 
 import (
 	"encoding/json"
@@ -13,8 +13,20 @@ import (
 	"github.com/rhnvrm/lyric-api-go/goquery_helpers"
 )
 
-func search(artist, song string) ([]byte, error) {
-	url := "http://api.genius.com/search?access_token=" + access_token + "&q=" + url.PathEscape(artist) + "-" + url.PathEscape(song)
+// Genius Provider.
+type Genius struct {
+	accessToken string
+}
+
+// New creates an instance of genius provider.
+func New(accessToken string) *Genius {
+	return &Genius{
+		accessToken: accessToken,
+	}
+}
+
+func search(artist, song, accessToken string) ([]byte, error) {
+	url := "http://api.genius.com/search?access_token=" + accessToken + "&q=" + url.PathEscape(artist) + "-" + url.PathEscape(song)
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -67,8 +79,10 @@ func scrape(url string) (string, error) {
 	return strings.TrimSpace(goquery_helpers.RenderSelection(result, "\n")), nil
 }
 
-func Fetch(artist, song string) string {
-	d, err := search("John Lennon", "imagine")
+// Fetch Searches Genius API based on Artist and Song. Then parses the result,
+// to get a song and obtaines the url and scrapes it to return the lyrics.
+func (g *Genius) Fetch(artist, song string) string {
+	d, err := search("John Lennon", "imagine", g.accessToken)
 	if err != nil {
 		panic(err)
 	}
