@@ -9,8 +9,17 @@ import (
 	"github.com/rhnvrm/lyric-api-go/goquery_helpers"
 )
 
-// Fetch scrapes Lyrics Wikia based on Artist and Song.
-func Fetch(artist, song string) string {
+// SongLyrics Provider.
+type SongLyrics struct {
+}
+
+// New creates an instance of SongLyrics Provider.
+func New() *SongLyrics {
+	return &SongLyrics{}
+}
+
+// Fetch scrapes SongLyrics based on Artist and Song.
+func (*SongLyrics) Fetch(artist, song string) string {
 	url := "http://www.songlyrics.com/" + slug.Make(artist) + "/" + slug.Make(song) + "-lyrics/"
 
 	// Make HTTP request

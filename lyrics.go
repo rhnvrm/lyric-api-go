@@ -8,7 +8,9 @@ import (
 	"github.com/rhnvrm/lyric-api-go/songlyrics"
 )
 
-type provider func(artist, song string) string
+type provider interface {
+	Fetch(artist, song string) string
+}
 
 // Supported Providers:
 // Default
@@ -17,8 +19,8 @@ type provider func(artist, song string) string
 // Require Setup
 // - Genius 		(github.com/rhnvrm/lyric-api-go/genius)
 var defaultProviders = []provider{
-	lyricswikia.Fetch,
-	songlyrics.Fetch,
+	lyricswikia.New(),
+	songlyrics.New(),
 }
 
 // Lyric API.
@@ -43,7 +45,7 @@ func WithAllProviders() Option {
 // lyrics from.
 func WithLyricsWikia() Option {
 	return func(l Lyric) Lyric {
-		l.providers = append(l.providers, lyricswikia.Fetch)
+		l.providers = append(l.providers, lyricswikia.New())
 		return l
 	}
 }
@@ -53,7 +55,7 @@ func WithLyricsWikia() Option {
 // lyrics from.
 func WithSongLyrics() Option {
 	return func(l Lyric) Lyric {
-		l.providers = append(l.providers, songlyrics.Fetch)
+		l.providers = append(l.providers, songlyrics.New())
 		return l
 	}
 }
@@ -64,8 +66,7 @@ func WithSongLyrics() Option {
 // be obtained using the developer portal (https://genius.com/developers)
 func WithGeniusLyrics(accessToken string) Option {
 	return func(l Lyric) Lyric {
-		g := genius.New(accessToken)
-		l.providers = append(l.providers, g.Fetch)
+		l.providers = append(l.providers, genius.New(accessToken))
 		return l
 	}
 }
@@ -103,7 +104,7 @@ func New(o ...Option) Lyric {
 // by trying various lyrics providers one by one.
 func (l *Lyric) Search(artist, song string) (string, error) {
 	for _, p := range l.providers {
-		lyric := p(artist, song)
+		lyric := p.Fetch(artist, song)
 		if len(lyric) > 5 { // Arbitrary size to make sure not empty.
 			return lyric, nil
 		}
