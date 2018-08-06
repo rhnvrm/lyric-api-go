@@ -11,6 +11,7 @@ func TestFetch(t *testing.T) {
 		artist string
 		song   string
 	}
+	provider := New()
 
 	Convey("For each song in the test cases", t, func() {
 		tests := []struct {
@@ -38,7 +39,7 @@ func TestFetch(t *testing.T) {
 
 		Convey("Want should be a substring of Got", func() {
 			for _, tt := range tests {
-				So(Fetch(tt.args.artist, tt.args.song), ShouldContainSubstring, tt.want)
+				So(provider.Fetch(tt.args.artist, tt.args.song), ShouldContainSubstring, tt.want)
 			}
 		})
 	})
