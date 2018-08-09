@@ -5,6 +5,7 @@ import (
 
 	"github.com/rhnvrm/lyric-api-go/genius"
 	"github.com/rhnvrm/lyric-api-go/lyricswikia"
+	"github.com/rhnvrm/lyric-api-go/musixmatch"
 	"github.com/rhnvrm/lyric-api-go/songlyrics"
 )
 
@@ -56,6 +57,16 @@ func WithLyricsWikia() Option {
 func WithSongLyrics() Option {
 	return func(l Lyric) Lyric {
 		l.providers = append(l.providers, songlyrics.New())
+		return l
+	}
+}
+
+// WithMusixMatch is an Option Configuration Decorator that adds
+// Musixmatch Provider to the list of providers to attempt fetching
+// lyrics from.
+func WithMusixMatch() Option {
+	return func(l Lyric) Lyric {
+		l.providers = append(l.providers, musixmatch.New())
 		return l
 	}
 }
