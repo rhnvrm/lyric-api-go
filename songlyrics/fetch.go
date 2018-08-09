@@ -36,5 +36,9 @@ func (*SongLyrics) Fetch(artist, song string) string {
 	}
 
 	result := document.Find("#songLyricsDiv").First()
-	return goquery_helpers.RenderSelection(result, "")
+	output := goquery_helpers.RenderSelection(result, "")
+	if output[:len("Sorry")] == "Sorry" {
+		return ""
+	}
+	return output
 }

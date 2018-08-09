@@ -35,6 +35,14 @@ func TestFetch(t *testing.T) {
 				},
 				want: `No need for greed or hunger`,
 			},
+			{
+				name: "DJ Snake - Magenta Riddim",
+				args: args{
+					artist: "DJ Snake",
+					song:   "Magenta Riddim",
+				},
+				want: ``, // Not found
+			},
 		}
 
 		Convey("Want should be a substring of Got", func() {
