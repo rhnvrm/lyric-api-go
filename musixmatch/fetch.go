@@ -1,7 +1,6 @@
 package musixmatch
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -20,15 +19,16 @@ func New() *MusixMatch {
 
 // Fetch scrapes MusixMatch based on Artist and Song.
 func (*MusixMatch) Fetch(artist, song string) string {
-	url := "https://www.musixmatch.com/lyrics/linkin-park/numb"
+	url := "https://www.musixmatch.com/lyrics/" + formatURL(artist) + "/" + formatURL(song)
 
 	req, _ := http.NewRequest("GET", url, nil)
 
-	req.Header.Add("cache-control", "no-cache")
-	req.Header.Add("postman-token", "a1686462-7043-6bf1-a401-543c7ab9746b")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:48.0) Gecko/20100101 Firefox/48.0")
 
-	res, _ := http.DefaultClient.Do(req)
-
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer res.Body.Close()
 
 	// Create a goquery document from the HTTP response
@@ -36,8 +36,9 @@ func (*MusixMatch) Fetch(artist, song string) string {
 	if err != nil {
 		log.Fatal("Error loading HTTP response body. ", err)
 	}
-	fmt.Println(document.Text(), url, res.StatusCode)
+	document.Find(".mxm-lyrics__content")
 
-	result := document.Find(".mxm-lyrics__content").First()
+	result := document.Find(".mxm-lyrics__content")
+
 	return goquery_helpers.RenderSelection(result, "")
 }

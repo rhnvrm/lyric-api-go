@@ -84,15 +84,15 @@ func scrape(url string) (string, error) {
 func (g *Genius) Fetch(artist, song string) string {
 	d, err := search("John Lennon", "imagine", g.accessToken)
 	if err != nil {
-		panic(err)
+		log.Fatal("Error loading HTTP response body. ", err)
 	}
 	u, err := parse(d)
 	if err != nil {
-		panic(err)
+		log.Fatal("Error loading HTTP response body. ", err)
 	}
 	lyric, err := scrape(u)
 	if err != nil {
-		panic(err)
+		log.Fatal("Error loading HTTP response body. ", err)
 	}
 	return lyric
 }

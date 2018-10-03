@@ -20,12 +20,12 @@ func TestFetch(t *testing.T) {
 			want string
 		}{
 			{
-				name: "Linkin Park - Numb",
+				name: "Michael Jackson - Remember the Time",
 				args: args{
-					artist: "Linkin Park",
-					song:   "Numb",
+					artist: "Michael Jackson",
+					song:   "Remember the Time",
 				},
-				want: `And every second I waste is more than I can take`,
+				want: `Do You Remember`,
 			},
 			{
 				name: "John Lennon - Imagine",
