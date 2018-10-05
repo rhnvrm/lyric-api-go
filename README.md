@@ -26,6 +26,16 @@ go get github.com/rhnvrm/lyric-api-go
 
 More examples can be found in the examples directory.
 
+### Getting Started
+
+Give this library a spin,
+
+```sh
+git clone https://github.com/rhnvrm/lyric-api-go.git
+cd lyric-api-go
+go run example/search.go
+```
+
 ### Basic Usage
 
 ```go
