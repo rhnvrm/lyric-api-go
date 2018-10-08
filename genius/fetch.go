@@ -71,7 +71,7 @@ func scrape(url string) (string, error) {
 	// Create a goquery document from the HTTP response
 	document, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
-		log.Fatal("Error loading HTTP response body. ", err)
+		return "", err
 	}
 
 	result := document.Find(".lyrics").First()
@@ -83,11 +83,13 @@ func scrape(url string) (string, error) {
 func (g *Genius) Fetch(artist, song string) string {
 	u, err := search(artist, song, g.accessToken)
 	if err != nil {
-		log.Fatal("Error loading HTTP response body. ", err)
+		log.Println("error in genius provider during search while attempting genius provider ", err)
+		return ""
 	}
 	lyric, err := scrape(u)
 	if err != nil {
-		log.Fatal("Error loading HTTP response body. ", err)
+		log.Println("error in genius provider during scraping while attempting genius provider ", err)
+		return ""
 	}
 	return lyric
 }

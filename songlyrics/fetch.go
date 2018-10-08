@@ -24,13 +24,14 @@ func (*SongLyrics) Fetch(artist, song string) string {
 
 	res, err := http.Get(url)
 	if err != nil {
+		log.Println("error during http request while attempting songlyrics provider ", err)
 		return ""
 	}
 	defer res.Body.Close()
 	// Create a goquery document from the HTTP response
 	document, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
-		log.Fatal("Error loading HTTP response body. ", err)
+		log.Println("error in reading document body while attempting songlyrics provider ", err)
 	}
 
 	result := document.Find("#songLyricsDiv").First()

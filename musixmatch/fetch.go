@@ -26,14 +26,16 @@ func (*MusixMatch) Fetch(artist, song string) string {
 	req.Header.Add("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:48.0) Gecko/20100101 Firefox/48.0")
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("error during http request while attempting musixmatch package ", err)
+		return ""
 	}
 	defer res.Body.Close()
 
 	// Create a goquery document from the HTTP response
 	document, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
-		log.Fatal("Error loading HTTP response body. ", err)
+		log.Println("error in reading document body while attempting musixmatch package ", err)
+		return ""
 	}
 
 	result := document.Find(".mxm-lyrics__content")
