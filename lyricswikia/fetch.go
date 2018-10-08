@@ -22,14 +22,14 @@ func (l *LyricsWikia) Fetch(artist, song string) string {
 	url := "http://lyrics.wikia.com/wiki/" + artist + ":" + song
 
 	// Make HTTP request
-	response, err := http.Get(url)
+	res, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		return ""
 	}
-	defer response.Body.Close()
+	defer res.Body.Close()
 
 	// Create a goquery document from the HTTP response
-	document, err := goquery.NewDocumentFromReader(response.Body)
+	document, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		log.Fatal("Error loading HTTP response body. ", err)
 	}

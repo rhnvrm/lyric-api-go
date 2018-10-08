@@ -24,7 +24,6 @@ func (*MusixMatch) Fetch(artist, song string) string {
 	req, _ := http.NewRequest("GET", url, nil)
 
 	req.Header.Add("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:48.0) Gecko/20100101 Firefox/48.0")
-
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Fatal(err)
@@ -36,7 +35,6 @@ func (*MusixMatch) Fetch(artist, song string) string {
 	if err != nil {
 		log.Fatal("Error loading HTTP response body. ", err)
 	}
-	document.Find(".mxm-lyrics__content")
 
 	result := document.Find(".mxm-lyrics__content")
 

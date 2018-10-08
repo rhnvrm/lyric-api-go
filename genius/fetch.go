@@ -3,6 +3,7 @@ package genius
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -25,29 +26,28 @@ func New(accessToken string) *Genius {
 	}
 }
 
-func search(artist, song, accessToken string) ([]byte, error) {
+func search(artist, song, accessToken string) (string, error) {
 	url := "http://api.genius.com/search?access_token=" + accessToken + "&q=" + url.PathEscape(artist) + "-" + url.PathEscape(song)
 
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Println("Error on response.\n[ERRO] -", err)
+		return "", err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New("non 200 error code from API, got " + string(resp.StatusCode) + " : " + resp.Status)
-	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
+	defer io.Copy(ioutil.Discard, resp.Body)
 
+	if resp.StatusCode != 200 {
+		return "", errors.New("non 200 error code from API, got " + string(resp.StatusCode) + " : " + resp.Status)
+	}
+
+	return parse(resp.Body)
 }
 
-func parse(data []byte) (string, error) {
+func parse(data io.Reader) (string, error) {
 	var res map[string]interface{}
 
-	if err := json.Unmarshal(data, &res); err != nil {
+	if err := json.NewDecoder(data).Decode(&res); err != nil {
 		return "", err
 	}
 	hits := res["response"].(map[string]interface{})["hits"].([]interface{})
@@ -62,15 +62,14 @@ func parse(data []byte) (string, error) {
 }
 
 func scrape(url string) (string, error) {
-	// Make HTTP request
-	response, err := http.Get(url)
+	res, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
-	defer response.Body.Close()
+	defer res.Body.Close()
 
 	// Create a goquery document from the HTTP response
-	document, err := goquery.NewDocumentFromReader(response.Body)
+	document, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		log.Fatal("Error loading HTTP response body. ", err)
 	}
@@ -82,11 +81,7 @@ func scrape(url string) (string, error) {
 // Fetch Searches Genius API based on Artist and Song. Then parses the result,
 // to get a song and obtaines the url and scrapes it to return the lyrics.
 func (g *Genius) Fetch(artist, song string) string {
-	d, err := search("John Lennon", "imagine", g.accessToken)
-	if err != nil {
-		log.Fatal("Error loading HTTP response body. ", err)
-	}
-	u, err := parse(d)
+	u, err := search(artist, song, g.accessToken)
 	if err != nil {
 		log.Fatal("Error loading HTTP response body. ", err)
 	}
