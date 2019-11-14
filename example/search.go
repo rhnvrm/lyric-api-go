@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/vladcomp/lyric-api-go"
+	"github.com/rhnvrm/lyric-api-go"
 )
 
 func main() {

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/vladcomp/lyric-api-go/goquery_helpers"
+	"github.com/rhnvrm/lyric-api-go/goquery_helpers"
 )
 
 // MusixMatch Provider.

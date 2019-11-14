@@ -1,6 +1,6 @@
 # Lyric API written in Golang
 
-[![GoDoc](https://godoc.org/github.com/vladcomp/lyric-api-go?status.svg)](https://godoc.org/github.com/vladcomp/lyric-api-go)
+[![GoDoc](https://godoc.org/github.com/rhnvrm/lyric-api-go?status.svg)](https://godoc.org/github.com/rhnvrm/lyric-api-go)
 
 This library provides an API to search for lyrics from various providers.
 
@@ -11,7 +11,7 @@ This library provides an API to search for lyrics from various providers.
 - LyricsWikia (Default)
 - SongLyrics (Default)
 
-Please refer to the test files, examples, and [GoDoc](https://godoc.org/github.com/vladcomp/lyric-api-go) for more details
+Please refer to the test files, examples, and [GoDoc](https://godoc.org/github.com/rhnvrm/lyric-api-go) for more details
 on using the providers.
 
 ## Installing
@@ -19,7 +19,7 @@ on using the providers.
 ### using go get
 
 ```sh
-go get github.com/vladcomp/lyric-api-go
+go get github.com/rhnvrm/lyric-api-go
 ```
 
 ## Usage Example
@@ -31,7 +31,7 @@ More examples can be found in the examples directory.
 Give this library a spin,
 
 ```sh
-git clone https://github.com/vladcomp/lyric-api-go.git
+git clone https://github.com/rhnvrm/lyric-api-go.git
 cd lyric-api-go
 go run example/search.go
 ```
@@ -44,7 +44,7 @@ package main
 import (
     "fmt"
 
-    "github.com/vladcomp/lyric-api-go"
+    "github.com/rhnvrm/lyric-api-go"
 )
 
 func main() {
@@ -71,7 +71,7 @@ package main
 import (
     "fmt"
 
-    "github.com/vladcomp/lyric-api-go"
+    "github.com/rhnvrm/lyric-api-go"
 )
 
 func main() {

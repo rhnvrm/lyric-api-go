@@ -6,7 +6,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gosimple/slug"
-	"github.com/vladcomp/lyric-api-go/goquery_helpers"
+	"github.com/rhnvrm/lyric-api-go/goquery_helpers"
 )
 
 // SongLyrics Provider.
