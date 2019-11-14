@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/rhnvrm/lyric-api-go/goquery_helpers"
+	"github.com/vladcomp/lyric-api-go/goquery_helpers"
 )
 
 // MusixMatch Provider.
@@ -18,7 +18,7 @@ func New() *MusixMatch {
 }
 
 // Fetch scrapes MusixMatch based on Artist and Song.
-func (*MusixMatch) Fetch(artist, song string) string {
+func (*MusixMatch) Fetch(artist, song string) (string, error) {
 	url := "https://www.musixmatch.com/lyrics/" + formatURL(artist) + "/" + formatURL(song)
 
 	req, _ := http.NewRequest("GET", url, nil)
@@ -27,7 +27,7 @@ func (*MusixMatch) Fetch(artist, song string) string {
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Println("error during http request while attempting musixmatch package ", err)
-		return ""
+		return "", err
 	}
 	defer res.Body.Close()
 
@@ -35,10 +35,10 @@ func (*MusixMatch) Fetch(artist, song string) string {
 	document, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		log.Println("error in reading document body while attempting musixmatch package ", err)
-		return ""
+		return "", err
 	}
 
 	result := document.Find(".mxm-lyrics__content")
 
-	return goquery_helpers.RenderSelection(result, "")
+	return goquery_helpers.RenderSelection(result, ""), nil
 }

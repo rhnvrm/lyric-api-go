@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/rhnvrm/lyric-api-go/goquery_helpers"
+	"github.com/vladcomp/lyric-api-go/goquery_helpers"
 )
 
 // LyricsWikia Provider.
@@ -18,14 +18,14 @@ func New() *LyricsWikia {
 }
 
 // Fetch scrapes Lyrics Wikia based on Artist and Song.
-func (l *LyricsWikia) Fetch(artist, song string) string {
+func (l *LyricsWikia) Fetch(artist, song string) (string, error) {
 	url := "http://lyrics.wikia.com/wiki/" + artist + ":" + song
 
 	// Make HTTP request
 	res, err := http.Get(url)
 	if err != nil {
 		log.Println("error during http request while attempting lyricswikia provider ", err)
-		return ""
+		return "", err
 	}
 	defer res.Body.Close()
 
@@ -33,9 +33,9 @@ func (l *LyricsWikia) Fetch(artist, song string) string {
 	document, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		log.Println("error in reading document body while attempting lyricswikia provider ", err)
-		return ""
+		return "", err
 	}
 
 	result := document.Find("div.lyricbox").First()
-	return goquery_helpers.RenderSelection(result, "\n")
+	return goquery_helpers.RenderSelection(result, "\n"), nil
 }

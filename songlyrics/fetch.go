@@ -6,7 +6,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gosimple/slug"
-	"github.com/rhnvrm/lyric-api-go/goquery_helpers"
+	"github.com/vladcomp/lyric-api-go/goquery_helpers"
 )
 
 // SongLyrics Provider.
@@ -19,13 +19,13 @@ func New() *SongLyrics {
 }
 
 // Fetch scrapes SongLyrics based on Artist and Song.
-func (*SongLyrics) Fetch(artist, song string) string {
+func (*SongLyrics) Fetch(artist, song string) (string, error) {
 	url := "http://www.songlyrics.com/" + slug.Make(artist) + "/" + slug.Make(song) + "-lyrics/"
 
 	res, err := http.Get(url)
 	if err != nil {
 		log.Println("error during http request while attempting songlyrics provider ", err)
-		return ""
+		return "", err
 	}
 	defer res.Body.Close()
 	// Create a goquery document from the HTTP response
@@ -37,7 +37,7 @@ func (*SongLyrics) Fetch(artist, song string) string {
 	result := document.Find("#songLyricsDiv").First()
 	output := goquery_helpers.RenderSelection(result, "")
 	if output[:len("Sorry")] == "Sorry" {
-		return ""
+		return "", err
 	}
-	return output
+	return output, err
 }

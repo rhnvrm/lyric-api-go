@@ -3,23 +3,23 @@ package lyrics
 import (
 	"errors"
 
-	"github.com/rhnvrm/lyric-api-go/genius"
-	"github.com/rhnvrm/lyric-api-go/lyricswikia"
-	"github.com/rhnvrm/lyric-api-go/musixmatch"
-	"github.com/rhnvrm/lyric-api-go/songlyrics"
+	"github.com/vladcomp/lyric-api-go/genius"
+	"github.com/vladcomp/lyric-api-go/lyricswikia"
+	"github.com/vladcomp/lyric-api-go/musixmatch"
+	"github.com/vladcomp/lyric-api-go/songlyrics"
 )
 
 type provider interface {
-	Fetch(artist, song string) string
+	Fetch(artist, song string) (string, error)
 }
 
 // Supported Providers:
 // Default
-// - Lyrics Wikia	(github.com/rhnvrm/lyric-api-go/lyricswikia)
-// - Song Lyrics	(github.com/rhnvrm/lyric-api-go/songlyrics)
-// - MusixMatch 	(github.com/rhnvrm/lyric-api-go/musixmatch)
+// - Lyrics Wikia	(github.com/vladcomp/lyric-api-go/lyricswikia)
+// - Song Lyrics	(github.com/vladcomp/lyric-api-go/songlyrics)
+// - MusixMatch 	(github.com/vladcomp/lyric-api-go/musixmatch)
 // Require Setup
-// - Genius 		(github.com/rhnvrm/lyric-api-go/genius)
+// - Genius 		(github.com/vladcomp/lyric-api-go/genius)
 var (
 	defaultProviders = []provider{
 		lyricswikia.New(),
@@ -138,7 +138,10 @@ func (l *Lyric) Search(artist, song string) (string, error) {
 	}
 
 	for _, p := range l.providers {
-		lyric := p.Fetch(artist, song)
+		lyric, err := p.Fetch(artist, song)
+		if err != nil {
+			return lyric, err
+		}
 		if len(lyric) > 5 { // Arbitrary size to make sure not empty.
 			return lyric, nil
 		}

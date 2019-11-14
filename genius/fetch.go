@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/rhnvrm/lyric-api-go/goquery_helpers"
+	"github.com/vladcomp/lyric-api-go/goquery_helpers"
 )
 
 // Genius Provider.
@@ -80,16 +80,16 @@ func scrape(url string) (string, error) {
 
 // Fetch Searches Genius API based on Artist and Song. Then parses the result,
 // to get a song and obtaines the url and scrapes it to return the lyrics.
-func (g *Genius) Fetch(artist, song string) string {
+func (g *Genius) Fetch(artist, song string) (string, error) {
 	u, err := search(artist, song, g.accessToken)
 	if err != nil {
 		log.Println("error in genius provider during search while attempting genius provider ", err)
-		return ""
+		return "", err
 	}
 	lyric, err := scrape(u)
 	if err != nil {
 		log.Println("error in genius provider during scraping while attempting genius provider ", err)
-		return ""
+		return "", err
 	}
-	return lyric
+	return lyric, nil
 }
