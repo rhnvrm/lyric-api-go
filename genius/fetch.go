@@ -86,6 +86,12 @@ func (g *Genius) Fetch(artist, song string) (string, error) {
 		log.Println("error in genius provider during search while attempting genius provider ", err)
 		return "", err
 	}
+
+	if err = validateSearchHit(u, artist, song); err != nil {
+		log.Println("genius provider returned the wrong song ", err)
+		return "", err
+	}
+
 	lyric, err := scrape(u)
 	if err != nil {
 		log.Println("error in genius provider during scraping while attempting genius provider ", err)
@@ -93,3 +99,18 @@ func (g *Genius) Fetch(artist, song string) (string, error) {
 	}
 	return lyric, nil
 }
+
+func validateSearchHit(hitUrl, artist, song string) error {
+	hitUrl = strings.Trim(hitUrl, "https://genius.com/")
+	hitUrl = strings.Replace(strings.ToLower(hitUrl), "-", "", -1)
+	artist = strings.Replace(strings.ToLower(artist), " ", "", -1)
+	song = strings.Replace(strings.ToLower(song), " ", "", -1)
+
+	if !strings.Contains(strings.ToLower(hitUrl), artist) || !strings.Contains(hitUrl, song) {
+
+		return errors.New("Invalid search result.  Does not contain artist and song name")
+	}
+
+	return nil
+}
+
