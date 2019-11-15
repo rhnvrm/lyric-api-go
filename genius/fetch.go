@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -41,10 +42,10 @@ func search(artist, song, accessToken string) (string, error) {
 		return "", errors.New("non 200 error code from API, got " + string(resp.StatusCode) + " : " + resp.Status)
 	}
 
-	return parse(resp.Body)
+	return parse(resp.Body, artist, song)
 }
 
-func parse(data io.Reader) (string, error) {
+func parse(data io.Reader, artist string, song string) (string, error) {
 	var res map[string]interface{}
 
 	if err := json.NewDecoder(data).Decode(&res); err != nil {
@@ -54,8 +55,14 @@ func parse(data io.Reader) (string, error) {
 	for _, v := range hits {
 		h := v.(map[string]interface{})
 		if h["type"] == "song" {
-			url := h["result"].(map[string]interface{})["url"].(string)
-			return url, nil
+			fullTitle := h["result"].(map[string]interface{})["full_title"].(string)
+			if err := validateSearchHit(fullTitle, artist, song); err == nil {
+				url := h["result"].(map[string]interface{})["url"].(string)
+				return url, nil
+			} else {
+				log.Println("genius search hit did not match artist or song titles ", err)
+
+			}
 		}
 	}
 	return "", errors.New("no song found")
@@ -87,11 +94,6 @@ func (g *Genius) Fetch(artist, song string) (string, error) {
 		return "", err
 	}
 
-	if err = validateSearchHit(u, artist, song); err != nil {
-		log.Println("genius provider returned the wrong song ", err)
-		return "", err
-	}
-
 	lyric, err := scrape(u)
 	if err != nil {
 		log.Println("error in genius provider during scraping while attempting genius provider ", err)
@@ -101,16 +103,32 @@ func (g *Genius) Fetch(artist, song string) (string, error) {
 }
 
 func validateSearchHit(hitUrl, artist, song string) error {
-	hitUrl = strings.Trim(hitUrl, "https://genius.com/")
+	//hitUrl = strings.Trim(hitUrl, "https://genius.com/")
+
 	hitUrl = strings.Replace(strings.ToLower(hitUrl), "-", "", -1)
-	artist = strings.Replace(strings.ToLower(artist), " ", "", -1)
-	song = strings.Replace(strings.ToLower(song), " ", "", -1)
+	artist = strings.ToLower(artist)
+	song = strings.ToLower(song)
 
-	if !strings.Contains(strings.ToLower(hitUrl), artist) || !strings.Contains(hitUrl, song) {
-
-		return errors.New("Invalid search result.  Does not contain artist and song name")
+	artistWords := strings.Split(artist, " ")
+	for _, word := range artistWords {
+		if !strings.Contains(hitUrl, StripNonAlphanumeric(word)) {
+			return errors.New("Invalid search result.  Does not contain artist string")
+		}
+	}
+	songWords := strings.Split(artist, " ")
+	for _, word := range songWords {
+		if !strings.Contains(hitUrl, StripNonAlphanumeric(word)) {
+			return errors.New("Invalid search result.  Does not contain song string")
+		}
 	}
 
 	return nil
 }
 
+func StripNonAlphanumeric(source string) string {
+	reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return reg.ReplaceAllString(source, "")
+}
