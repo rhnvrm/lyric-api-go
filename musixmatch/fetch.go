@@ -21,8 +21,11 @@ func New() *MusixMatch {
 func (*MusixMatch) Fetch(artist, song string) (string, error) {
 	url := "https://www.musixmatch.com/lyrics/" + formatURL(artist) + "/" + formatURL(song)
 
-	req, _ := http.NewRequest("GET", url, nil)
-
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Println("error creating musixmatch request ", err)
+		return "", err
+	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:48.0) Gecko/20100101 Firefox/48.0")
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
