@@ -3,6 +3,7 @@ package songlyrics
 import (
 	"log"
 	"net/http"
+	"errors"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gosimple/slug"
