@@ -32,12 +32,16 @@ func (*SongLyrics) Fetch(artist, song string) (string, error) {
 	document, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		log.Println("error in reading document body while attempting songlyrics provider ", err)
+		return "", err
 	}
 
 	result := document.Find("#songLyricsDiv").First()
 	output := goquery_helpers.RenderSelection(result, "")
-	if output[:len("Sorry")] == "Sorry" {
-		return "", err
+
+	sorryLen := len("Sorry")
+	if len(output) >= sorryLen && output[:sorryLen] == "Sorry" {
+		return "", errors.New("sorry, no results found")
 	}
+
 	return output, err
 }
