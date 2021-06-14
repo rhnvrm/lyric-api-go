@@ -81,7 +81,7 @@ func scrape(url string) (string, error) {
 		return "", err
 	}
 
-	result := document.Find(".lyrics").First()
+	result := document.Find("[class^=\"Lyrics\"]")
 	return strings.TrimSpace(goquery_helpers.RenderSelection(result, "\n")), nil
 }
 
