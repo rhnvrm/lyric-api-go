@@ -1,4 +1,4 @@
-module github.com/rhnvrm/lyric-api-go
+module github.com/vladcomp/lyric-api-go
 
 require (
 	github.com/PuerkitoBio/goquery v1.4.1
