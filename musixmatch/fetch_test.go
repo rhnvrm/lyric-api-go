@@ -3,7 +3,7 @@ package musixmatch
 import (
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFetch(t *testing.T) {
@@ -13,34 +13,30 @@ func TestFetch(t *testing.T) {
 	}
 	provider := New()
 
-	Convey("For each song in the test cases", t, func() {
-		tests := []struct {
-			name string
-			args args
-			want string
-		}{
-			{
-				name: "Michael Jackson - Remember the Time",
-				args: args{
-					artist: "Michael Jackson",
-					song:   "Remember the Time",
-				},
-				want: `Do You Remember`,
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Michael Jackson - Remember the Time",
+			args: args{
+				artist: "Michael Jackson",
+				song:   "Remember the Time",
 			},
-			{
-				name: "John Lennon - Imagine",
-				args: args{
-					artist: "John Lennon",
-					song:   "Imagine",
-				},
-				want: `No need for greed or hunger`,
+			want: `Do you remember`,
+		},
+		{
+			name: "Linkin Park - Numb",
+			args: args{
+				artist: "Linkin Park",
+				song:   "Numb",
 			},
-		}
+			want: `And every second I waste is more than I can take`,
+		},
+	}
 
-		Convey("Want should be a substring of Got", func() {
-			for _, tt := range tests {
-				So(provider.Fetch(tt.args.artist, tt.args.song), ShouldContainSubstring, tt.want)
-			}
-		})
-	})
+	for _, tt := range tests {
+		require.Contains(t, provider.Fetch(tt.args.artist, tt.args.song), tt.want)
+	}
 }

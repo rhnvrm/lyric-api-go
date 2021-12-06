@@ -11,18 +11,24 @@ import (
 
 // SongLyrics Provider.
 type SongLyrics struct {
+	http *http.Client
 }
 
 // New creates an instance of SongLyrics Provider.
 func New() *SongLyrics {
-	return &SongLyrics{}
+	return &SongLyrics{http: http.DefaultClient}
+}
+
+// NewWithHTTP creates an instance of SongLyrics Provider with a custom http client.
+func NewWithHTTP(http *http.Client) *SongLyrics {
+	return &SongLyrics{http: http}
 }
 
 // Fetch scrapes SongLyrics based on Artist and Song.
-func (*SongLyrics) Fetch(artist, song string) string {
+func (s *SongLyrics) Fetch(artist, song string) string {
 	url := "http://www.songlyrics.com/" + slug.Make(artist) + "/" + slug.Make(song) + "-lyrics/"
 
-	res, err := http.Get(url)
+	res, err := s.http.Get(url)
 	if err != nil {
 		log.Println("error during http request while attempting songlyrics provider ", err)
 		return ""

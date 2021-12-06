@@ -3,6 +3,7 @@ package genius
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -14,22 +15,40 @@ import (
 	"github.com/rhnvrm/lyric-api-go/goquery_helpers"
 )
 
+var (
+	ErrInvalidResponse = errors.New("invalid response")
+	ErrLyricsNotFound  = errors.New("no lyrics found")
+	ErrRequestFailed   = errors.New("request failed")
+)
+
 // Genius Provider.
 type Genius struct {
 	accessToken string
+	http        *http.Client
 }
 
 // New creates an instance of genius provider.
 func New(accessToken string) *Genius {
 	return &Genius{
 		accessToken: accessToken,
+		http:        http.DefaultClient,
 	}
 }
 
-func search(artist, song, accessToken string) (string, error) {
-	url := "http://api.genius.com/search?access_token=" + accessToken + "&q=" + url.PathEscape(artist) + "-" + url.PathEscape(song)
+// NewWithHTTP creates an instance of genius provider with a custom http client.
+func NewWithHTTP(accessToken string, http *http.Client) *Genius {
+	return &Genius{
+		accessToken: accessToken,
+		http:        http,
+	}
+}
 
-	resp, err := http.Get(url)
+func (g *Genius) search(artist, song string) (string, error) {
+	url := "http://api.genius.com/search?" +
+		"access_token=" + g.accessToken +
+		"&q=" + url.PathEscape(artist) + "-" + url.PathEscape(song)
+
+	resp, err := g.http.Get(url)
 	if err != nil {
 		log.Println("Error on response.\n[ERRO] -", err)
 		return "", err
@@ -37,8 +56,8 @@ func search(artist, song, accessToken string) (string, error) {
 	defer resp.Body.Close()
 	defer io.Copy(ioutil.Discard, resp.Body)
 
-	if resp.StatusCode != 200 {
-		return "", errors.New("non 200 error code from API, got " + string(resp.StatusCode) + " : " + resp.Status)
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("response (%d `%s`): %w", resp.StatusCode, resp.Status, ErrRequestFailed)
 	}
 
 	return parse(resp.Body)
@@ -50,25 +69,52 @@ func parse(data io.Reader) (string, error) {
 	if err := json.NewDecoder(data).Decode(&res); err != nil {
 		return "", err
 	}
-	hits := res["response"].(map[string]interface{})["hits"].([]interface{})
+
+	resp, ok := res["response"].(map[string]interface{})
+	if !ok {
+		return "", ErrInvalidResponse
+	}
+
+	hits, ok := resp["hits"].([]interface{})
+	if !ok {
+		return "", ErrInvalidResponse
+	}
+
 	for _, v := range hits {
-		h := v.(map[string]interface{})
+		h, ok := v.(map[string]interface{})
+		if !ok {
+			return "", ErrInvalidResponse
+		}
+
 		if h["type"] == "song" {
-			url := h["result"].(map[string]interface{})["url"].(string)
+			res, ok := h["result"].(map[string]interface{})
+			if !ok {
+				return "", ErrInvalidResponse
+			}
+
+			url, ok := res["url"].(string)
+			if !ok {
+				return "", ErrInvalidResponse
+			}
+
 			return url, nil
 		}
 	}
-	return "", errors.New("no song found")
+	return "", ErrLyricsNotFound
 }
 
-func scrape(url string) (string, error) {
-	res, err := http.Get(url)
+// Scrape scrapes the given Genius url to get the lyrics.
+func (g *Genius) Scrape(url string) (string, error) {
+	res, err := g.http.Get(url)
 	if err != nil {
 		return "", err
 	}
 	defer res.Body.Close()
 
-	// Create a goquery document from the HTTP response
+	if res.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("response (%d `%s`): %w", res.StatusCode, res.Status, ErrRequestFailed)
+	}
+
 	document, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		return "", err
@@ -81,12 +127,13 @@ func scrape(url string) (string, error) {
 // Fetch Searches Genius API based on Artist and Song. Then parses the result,
 // to get a song and obtaines the url and scrapes it to return the lyrics.
 func (g *Genius) Fetch(artist, song string) string {
-	u, err := search(artist, song, g.accessToken)
+	u, err := g.search(artist, song)
 	if err != nil {
 		log.Println("error in genius provider during search while attempting genius provider ", err)
 		return ""
 	}
-	lyric, err := scrape(u)
+
+	lyric, err := g.Scrape(u)
 	if err != nil {
 		log.Println("error in genius provider during scraping while attempting genius provider ", err)
 		return ""
