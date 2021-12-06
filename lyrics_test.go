@@ -1,12 +1,12 @@
-package main
+package lyrics_test
 
 import (
 	"fmt"
 
-	"github.com/rhnvrm/lyric-api-go"
+	lyrics "github.com/rhnvrm/lyric-api-go"
 )
 
-func main() {
+func Example_genius() {
 	var (
 		artist = "John Lennon"
 		song   = "Imagine"
@@ -20,5 +20,22 @@ func main() {
 	if err != nil {
 		fmt.Printf("%v: Lyrics for %v-%v were not found", err, artist, song)
 	}
+
 	fmt.Println(lyric)
+}
+
+func Example_search() {
+	var (
+		artist = "John Lennon"
+		song   = "Imagine"
+	)
+
+	l := lyrics.New()
+	lyric, err := l.Search(artist, song)
+
+	if err != nil {
+		fmt.Printf("Lyrics for %v-%v were not found", artist, song)
+	}
+	fmt.Println(lyric)
+
 }

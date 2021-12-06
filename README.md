@@ -8,7 +8,7 @@ This library provides an API to search for lyrics from various providers.
 
 - Genius (Requires Setup)
 - MusixMatch (Default)
-- LyricsWikia (Default)
+- LyricsWikia (DEPRECATED)
 - SongLyrics (Default)
 
 Please refer to the test files, examples, and [GoDoc](https://godoc.org/github.com/rhnvrm/lyric-api-go) for more details
@@ -44,7 +44,7 @@ package main
 import (
     "fmt"
 
-    "github.com/rhnvrm/lyric-api-go"
+    lyrics "github.com/rhnvrm/lyric-api-go"
 )
 
 func main() {
@@ -71,7 +71,7 @@ package main
 import (
     "fmt"
 
-    "github.com/rhnvrm/lyric-api-go"
+    lyrics "github.com/rhnvrm/lyric-api-go"
 )
 
 func main() {
@@ -94,5 +94,5 @@ func main() {
 
 ## Contributing
 
-You are more than welcome to contribute to this project. Fork and
+You are welcome to contribute to this project. Fork and
 make a Pull Request, or create an Issue if you see any problem or want to propose a feature.

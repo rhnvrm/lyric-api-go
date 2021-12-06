@@ -2,6 +2,7 @@ package lyrics
 
 import (
 	"errors"
+	"net/http"
 
 	"github.com/rhnvrm/lyric-api-go/genius"
 	"github.com/rhnvrm/lyric-api-go/lyricswikia"
@@ -9,20 +10,19 @@ import (
 	"github.com/rhnvrm/lyric-api-go/songlyrics"
 )
 
-type provider interface {
+type Provider interface {
 	Fetch(artist, song string) string
 }
 
 // Supported Providers:
 // Default
-// - Lyrics Wikia	(github.com/rhnvrm/lyric-api-go/lyricswikia)
+// - Lyrics Wikia	(github.com/rhnvrm/lyric-api-go/lyricswikia) (deprecated)
 // - Song Lyrics	(github.com/rhnvrm/lyric-api-go/songlyrics)
 // - MusixMatch 	(github.com/rhnvrm/lyric-api-go/musixmatch)
-// Require Setup
+// Requires Setup
 // - Genius 		(github.com/rhnvrm/lyric-api-go/genius)
 var (
-	defaultProviders = []provider{
-		lyricswikia.New(),
+	defaultProviders = []Provider{
 		songlyrics.New(),
 		musixmatch.New(),
 	}
@@ -30,7 +30,8 @@ var (
 
 // Lyric API.
 type Lyric struct {
-	providers []provider
+	providers []Provider
+	http      *http.Client
 }
 
 // Option type describes Option Configuration Decorator return type.
@@ -48,7 +49,7 @@ func WithAllProviders() Option {
 
 // WithLyricsWikia is an Option Configuration Decorator that adds
 // Lyrics Wikia Provider to the list of providers to attempt fetching
-// lyrics from.
+// lyrics from. **DEPRECATED**.
 func WithLyricsWikia() Option {
 	return func(l Lyric) Lyric {
 		l.providers = append(l.providers, lyricswikia.New())
@@ -61,7 +62,11 @@ func WithLyricsWikia() Option {
 // lyrics from.
 func WithSongLyrics() Option {
 	return func(l Lyric) Lyric {
-		l.providers = append(l.providers, songlyrics.New())
+		if l.http == nil {
+			l.providers = append(l.providers, songlyrics.New())
+		} else {
+			l.providers = append(l.providers, songlyrics.NewWithHTTP(l.http))
+		}
 		return l
 	}
 }
@@ -71,7 +76,11 @@ func WithSongLyrics() Option {
 // lyrics from.
 func WithMusixMatch() Option {
 	return func(l Lyric) Lyric {
-		l.providers = append(l.providers, musixmatch.New())
+		if l.http == nil {
+			l.providers = append(l.providers, musixmatch.New())
+		} else {
+			l.providers = append(l.providers, musixmatch.NewWithHTTP(l.http))
+		}
 		return l
 	}
 }
@@ -82,7 +91,11 @@ func WithMusixMatch() Option {
 // be obtained using the developer portal (https://genius.com/developers)
 func WithGeniusLyrics(accessToken string) Option {
 	return func(l Lyric) Lyric {
-		l.providers = append(l.providers, genius.New(accessToken))
+		if l.http == nil {
+			l.providers = append(l.providers, genius.New(accessToken))
+		} else {
+			l.providers = append(l.providers, genius.NewWithHTTP(accessToken, l.http))
+		}
 		return l
 	}
 }
@@ -93,7 +106,18 @@ func WithGeniusLyrics(accessToken string) Option {
 // set a custom provider list.
 func WithoutProviders() Option {
 	return func(l Lyric) Lyric {
-		l.providers = []provider{}
+		l.providers = []Provider{}
+		return l
+	}
+}
+
+// WithHTTPClient is an Option Configuration Decorator that sets
+// the HTTP Client to be used by the Lyric API. If you wish to use
+// the same client across multiple Lyric API instances, make sure to
+// set this option before setting up the other With options.
+func WithHTTPClient(c *http.Client) Option {
+	return func(l Lyric) Lyric {
+		l.http = c
 		return l
 	}
 }
