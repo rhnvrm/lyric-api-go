@@ -9,6 +9,11 @@ import (
 	"github.com/rhnvrm/lyric-api-go/songlyrics"
 )
 
+var (
+	ErrNotFound    = errors.New("Not Found")
+	ErrNoProviders = errors.New("No providers selected")
+)
+
 type provider interface {
 	Fetch(artist, song string) string
 }
@@ -102,7 +107,9 @@ func WithoutProviders() Option {
 // using various providers. The default behaviour is to use all
 // providers available, although it can be explicitly set to the same
 // using, eg.
-// 		lyrics.New(WithAllProviders())
+//
+//	lyrics.New(WithAllProviders())
+//
 // In case your usecase requires using only specific providers,
 // you can provide New() with WithoutProviders() followed by
 // the specific WithXXXXProvider() as an optional parameter.
@@ -111,10 +118,12 @@ func WithoutProviders() Option {
 // can also be used to set the priority for your usecase.
 //
 // Eg. to attempt only with Lyrics Wikia:
-// 		lyrics.New(WithoutProviders(), WithLyricsWikia())
+//
+//	lyrics.New(WithoutProviders(), WithLyricsWikia())
 //
 // Eg. to attempt with both Lyrics Wikia and Song Lyrics:
-// 		lyrics.New(WithoutProviders(), WithLyricsWikia(), WithSongLyrics())
+//
+//	lyrics.New(WithoutProviders(), WithLyricsWikia(), WithSongLyrics())
 func New(o ...Option) Lyric {
 	if len(o) == 0 {
 		return Lyric{
@@ -134,7 +143,7 @@ func New(o ...Option) Lyric {
 // by trying various lyrics providers one by one.
 func (l *Lyric) Search(artist, song string) (string, error) {
 	if len(l.providers) == 0 {
-		return "", errors.New("No providers selected")
+		return "", ErrNoProviders
 	}
 
 	for _, p := range l.providers {
@@ -143,5 +152,5 @@ func (l *Lyric) Search(artist, song string) (string, error) {
 			return lyric, nil
 		}
 	}
-	return "", errors.New("Not Found")
+	return "", ErrNotFound
 }
